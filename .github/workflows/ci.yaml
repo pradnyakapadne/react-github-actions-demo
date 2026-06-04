@@ -26,29 +26,21 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t react-app:${{ github.run_number }} .
+          docker build -t ${{ secrets.ECR_REPOSITORY }}:${{ github.run_number }} . 
+##updated latest with github.run_number as it required unique id 
 
-      - name: Tag Image
+      - name: Tag Image for ECR
         run: |
-          docker tag react-app:${{ github.run_number }} \
-          ${{ steps.login-ecr.outputs.registry }}/react-todo-app:${{ github.run_number }}
+          docker tag ${{ secrets.ECR_REPOSITORY }}:${{ github.run_number }} \
+          ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ github.run_number }}
 
-      - name: Push Image
+      - name: Push Image to ECR
         run: |
-          docker push ${{ steps.login-ecr.outputs.registry }}/react-todo-app:${{ github.run_number }}
+          docker push ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ github.run_number }}
 
-      # updating the latest tag in IMAGE URI
-      - name: Render ECS Task Definition
-        id: render-task
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
-        with:
-          task-definition: task-definition.json
-          container-name: react-todo-container
-          image: ${{ steps.login-ecr.outputs.registry }}/react-todo-app:${{ github.run_number }}
-
-      - name: Deploy to ECS
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-        with:
-          task-definition: ${{ steps.render-task.outputs.task-definition }}
-          service: ${{ secrets.ECS_SERVICE }}
-          cluster: ${{ secrets.ECS_CLUSTER }}
+      - name: Force ECS Deployment
+        run: |
+          aws ecs update-service \
+          --cluster ${{ secrets.ECS_CLUSTER }} \
+          --service ${{ secrets.ECS_SERVICE }} \cd react-github-actions-demo
+          --force-new-deployment
