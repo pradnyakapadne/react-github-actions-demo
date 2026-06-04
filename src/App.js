@@ -140,7 +140,7 @@ export default function App() {
 									fontFamily: `Greycliff CF, ${theme.fontFamily}`,
 									fontWeight: 900,
 								})}>
-								My Tasks
+								My Tasks_1
 							</Title>
 							<ActionIcon
 								color={'blue'}
