@@ -18,3 +18,4 @@ jobs:
 
       - name: Build Docker Image
         run: docker build -t react-todo-app:v1 .
+        
